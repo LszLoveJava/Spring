@@ -411,6 +411,15 @@ public class BeanDefinitionParserDelegate {
 	 * {@link org.springframework.beans.factory.parsing.ProblemReporter}.
 	 */
 	@Nullable
+	/*
+	 * tip：bean的初始化 #5 解析bean definition元素
+	 * 1）解析 XML 元素的 id 和 name 属性，将 name 属性按分隔符拆分后存入别名列表；
+	 * 2）确定 Bean 名称：优先用 id，若 id 为空则从别名列表取第一个作为 Bean 名称，剩余仍为别名；
+	 * 3）若不存在包含 Bean，校验 Bean 名称和别名的唯一性，避免重复；
+	 * 4）解析 XML 元素的其他属性（如类名、作用域等），生成 AbstractBeanDefinition 实例；
+	 * 5）若仍无有效 Bean 名称，自动生成唯一名称（含兼容旧版本的类名别名逻辑）；
+	 * 6）将 Bean 定义、最终名称、别名封装为 BeanDefinitionHolder 返回，无有效定义则返回 null。
+	 */
 	public BeanDefinitionHolder parseBeanDefinitionElement(Element ele, @Nullable BeanDefinition containingBean) {
 		String id = ele.getAttribute(ID_ATTRIBUTE);
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
@@ -497,6 +506,18 @@ public class BeanDefinitionParserDelegate {
 	 * {@code null} if problems occurred during the parsing of the bean definition.
 	 */
 	@Nullable
+	/*
+	 * tip：bean的初始化 #6 创建bean definition对象，并包装成 bean definition holder 返回
+	 * 1）入栈解析状态（记录当前解析的 Bean 名称），便于异常时追踪解析上下文；
+	 * 2）提取 XML 元素的 class 和 parent 属性，分别作为 Bean 类名、父 Bean 名称；
+	 * 3）根据类名和父 Bean 名称创建 AbstractBeanDefinition 基础实例；
+	 * 4）解析 Bean 核心属性（作用域、懒加载、初始化 / 销毁方法等）并设置到实例中；
+	 * 5）解析 Bean 的描述信息、元数据（meta 标签）、方法覆盖（lookup/replaced-method）等扩展配置；
+	 * 6）解析构造器参数、属性注入（property 标签）、限定符（qualifier 标签）等依赖注入相关配置；
+	 * 7）为 Bean 定义设置资源信息（当前解析的 XML 资源）和源码位置（XML 元素节点）；
+	 * 8）捕获解析过程中的类未找到、依赖缺失等异常并记录错误，最终出栈解析状态；
+	 * 9）解析成功返回构建好的 AbstractBeanDefinition，异常则返回 null。
+	 */
 	public AbstractBeanDefinition parseBeanDefinitionElement(
 			Element ele, String beanName, @Nullable BeanDefinition containingBean) {
 
